@@ -3,7 +3,13 @@ const morgan = require('morgan')
 const cors = require('cors')
 const app = express()
 const path = require('path');
+require('dotenv').config();
+const mongoose = require('mongoose');
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('Yhdistetty MongoDB-tietokantaan'))
+    .catch((err) => console.error('Virhe yhdistettäessä:', err));
 
+console.log('Ympäristömuuttuja', process.env.MONGO_URI);
 app.use(express.json())
 app.use(express.static(path.join(__dirname, 'dist')));
 app.use(cors())
