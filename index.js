@@ -2,7 +2,7 @@ const express = require('express')
 const morgan = require('morgan')
 const app = express()
 const path = require('path');
-app.use(express.static(path.join(__dirname, 'dist')));
+
 app.use(express.json())
 
 console.log('__dirname is:', __dirname);
@@ -39,9 +39,44 @@ let contacts = [
         number: "39-23-6423122"
     }
 ]
-
+let notes = [
+    {
+      "id": "1",
+      "content": "HTML is easy",
+      "important": true
+    },
+    {
+      "id": "2",
+      "content": "Browser can execute only Javascript",
+      "important": false
+    },
+    {
+      "id": "3",
+      "content": "GET and POST are the most important methods of HTTP protocol",
+      "important": true
+    },
+    {
+      "id": "c592",
+      "content": "HTML is the most boring language",
+      "important": true
+    },
+    {
+      "id": "8dde",
+      "content": "Hello",
+      "important": true
+    },
+    {
+      "id": "ae58",
+      "content": "Hello again",
+      "important": false
+    }
+]
 app.get('/', (request, response) => { // random
   response.send('<h1>Hello World!</h1>')
+})
+
+app.get('/api/notes', (request, response) => {
+    response.json(notes)
 })
 
 app.get('/api/contacts', (request, response) => { //get all
@@ -80,7 +115,7 @@ app.post('/api/contacts', (request, response) => {
 
     }
     if (contacts.find(c => c.name === contact.name)) {
-        return response.status(409),json({ error: 'Sama nimi on jo luettelossa'})
+        return response.status(409).json({ error: 'Sama nimi on jo luettelossa'})
     }
     let newId
     do {
@@ -103,3 +138,4 @@ const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
+app.use(express.static(path.join(__dirname, 'dist')));
