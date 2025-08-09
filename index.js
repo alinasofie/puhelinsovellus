@@ -1,18 +1,32 @@
+require('dotenv').config();
 const express = require('express')
 const morgan = require('morgan')
+const mongoose = require('mongoose')
 const cors = require('cors')
-const app = express()
-const path = require('path');
-require('dotenv').config();
-const mongoose = require('mongoose');
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('Yhdistetty MongoDB-tietokantaan'))
-    .catch((err) => console.error('Virhe yhdistettäessä:', err));
 
-console.log('Ympäristömuuttuja', process.env.MONGO_URI);
+const path = require('path');
+
+const app = express()
+
 app.use(express.json())
 app.use(express.static(path.join(__dirname, 'dist')));
 app.use(cors())
+
+const PORT = process.env.PORT || 3001
+
+mongoose.set('strictQuery', false);
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => {
+        console.log('Yhdistetty MongoDB-tietokantaan');
+        app.listen(PORT, () => {
+            console.log(`Serveri portissa ${PORT}`)
+        })
+        runApp();
+    })
+    .catch((err) => console.error('Virhe yhdistettäessä:', err));
+
+
+
 
 console.log('__dirname is:', __dirname);
 morgan.token('post-contact', (request) => {
@@ -80,6 +94,20 @@ let notes = [
       "important": false
     }
 ]
+const noteSchema = new mongoose.Schema({
+    content: String,
+    important: Boolean,
+})
+const Note = mongoose.model('Note', noteSchema)
+function runApp() {
+    const note = new Note({
+        content: 'HTML is lovely',
+        important: true,
+    });
+    note.save().then(() => {
+        console.log('Note on tallennettu tietokantaan');
+    })
+}
 app.get('/', (request, response) => { // random
   response.send('<h1>Hello World!</h1>')
 })
@@ -143,7 +171,5 @@ const unknownEndpoint = (request, response) => {
     response.status(404).send({error: 'unknown endpoint'})
 }
 app.use(unknownEndpoint)
-const PORT = process.env.PORT || 3001
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
-})
+
+
