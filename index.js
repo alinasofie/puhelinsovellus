@@ -7,25 +7,22 @@ app.use('/api', express.json())
 app.use(cors())
 const path = require('path');
 const mongoose = require('mongoose')
+const url = process.env.MONGO_URI
 const Note = require('./models/note')
 const Contact = require('./models/contact')
-const url = process.env.MONGO_URI
-const startServer = () => {
-    app.listen(PORT, () => {
-        console.log(`Server running on port${PORT}`)
-    })
-}
+
 
 mongoose.set('strictQuery', false)
 
 mongoose.connect(url)
   .then(() => {
     console.log('Connected to MongoDB')
-    startServer()
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`)
+    })
   })
   .catch((error) => {
     console.error('Error connecting to MongoDB:', error.message)
-    startServer()
   })
 
 
@@ -180,9 +177,7 @@ app.post('/api/contacts', (request, response) => {
     })
 
 })
-app.listen(PORT, () => {
-    console.log(`Server running on port${PORT}`)
-})
+
 const unknownEndpoint = (request, response) => {
     response.status(404).send({error: 'unknown endpoint'})
 }
