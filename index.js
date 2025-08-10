@@ -5,7 +5,7 @@ const cors = require('cors')
 const app = express()
 app.use(cors())
 app.use('/api', express.json())
-app.use(express.static(path.join(__dirname, 'dist')));
+
 
 const path = require('path');
 const mongoose = require('mongoose')
@@ -180,7 +180,7 @@ app.post('/api/contacts', (request, response) => {
     })
 
 })
-
+app.use(express.static(path.join(__dirname, 'dist')));
 const unknownEndpoint = (request, response) => {
     response.status(404).send({error: 'unknown endpoint'})
 }
