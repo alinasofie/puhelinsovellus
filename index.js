@@ -184,7 +184,5 @@ const unknownEndpoint = (request, response) => {
 }
 app.use(unknownEndpoint)
 app.use(express.static(path.join(__dirname, 'dist')));
-app.get('*', (request, response) => {
-    response.sendFile(path.join(__dirname, 'dist', 'index.html'))
-})
+
 
