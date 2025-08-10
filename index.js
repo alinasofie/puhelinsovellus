@@ -10,22 +10,22 @@ const mongoose = require('mongoose')
 const Note = require('./models/note')
 const Contact = require('./models/contact')
 const url = process.env.MONGO_URI
-/* const startServer = () => {
+const startServer = () => {
     app.listen(PORT, () => {
         console.log(`Server running on port${PORT}`)
     })
-} */
+}
 
 mongoose.set('strictQuery', false)
 
 mongoose.connect(url)
   .then(() => {
     console.log('Connected to MongoDB')
-    
+    startServer()
   })
   .catch((error) => {
     console.error('Error connecting to MongoDB:', error.message)
-    
+    startServer()
   })
 
 
