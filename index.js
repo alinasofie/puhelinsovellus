@@ -4,10 +4,12 @@ const morgan = require('morgan')
 const cors = require('cors')
 const path = require('path');
 const Note = require('./models/note')
-const app = express()
-app.use(cors())
-app.use('/api', express.json())
+const Contact = require('./models/contact')
 
+const app = express()
+
+app.use('/api', express.json())
+app.use(cors())
 
 
 const PORT = process.env.PORT || 3001
@@ -89,44 +91,50 @@ app.get('/', (request, response) => { // random
 
 app.get('/api/notes', (request, response) => {
     Note.find({}).then(notes => {
-        response.json(notes)
+        response.json(notes.map(note => note.toJSON()))
     })
 })
 
 app.get('/api/notes/:id', (request, response) => {
     Note.findById(request.params.id).then(note => {
-        response.json(note)
+        if (note) {
+            response.json(note.toJSON())
+        } else {
+            response.status(404).end()
+        }
     })
 })
 
 app.get('/api/contacts', (request, response) => { //get all
-  response.json(contacts)
+  Contact.find({}).then(contacts => {
+    response.json(contacts.map(contact => contact.toJSON()))
+  })
 })
+
 app.get('/api/info', (request, response) => { // count number and date
     const count = contacts.length
     const date = new Date()
     response.send(`<p>Kontakteja on ${count} kappaletta</p><p>${date}</p>`)
 }) 
 
-app.get('/api/contacts/:id', (request, response) => { // search
-    const id = request.params.id
-    const contact = contacts.find(contact => contact.id === id)
-    if (contact) {
-        response.json(contact)
-    } else {
-        response.status(404).send({ error: 'Kontaktia ei ole'})
-    }
+app.get('/api/contacts/:id', (request, response) => {
+    Contact.findById(request.params.id).then(contact => {
+        if (contact) {
+            response.json(contact.toJSON())
+        } else {
+            response.status(404).send({ error: 'Kontaktia ei ole' })
+        }
+    })
 })
 
 app.delete('/api/contacts/:id', (request, response) => {
-    const id = request.params.id
-    const allLength = contacts.length
-    contacts = contacts.filter(contact => contact.id !== id)
-    if (contacts.length < allLength) {
-        response.status(204).end()
-    } else {
-        response.status(404).send({ error: 'Kontaktia ei löytynyt'})
-    }
+    Contact.findByIdAndDelete(request.params.id)
+        .then(() => {
+            response.status(204).end()
+        })
+        .catch(error => {
+            response.status(404).send({ error: 'Kontakti poistettu'})
+        })
 })
 app.post('/api/notes', (request, response) => {
     const body = request.body
@@ -138,35 +146,32 @@ app.post('/api/notes', (request, response) => {
         important: body.important || false,
     })
     note.save().then(savedNote => {
-        response.json(savedNote)
+        response.json(savedNote.toJSON())
     })
 })
 
 app.post('/api/contacts', (request, response) => {
-    const contact = request.body
-    if (!contact.name || !contact.number) {
+    const body = request.body
+    if (!body.name || !body.number) {
         return response.status(400).json({ error: 'Nimi tai numero puuttuu'})
 
     }
-    if (contacts.find(c => c.name === contact.name)) {
-        return response.status(409).json({ error: 'Sama nimi on jo luettelossa'})
-    }
-    let newId
-    do {
-        newId = Math.floor(Math.random() * 900000) + 100000
-    } while (contacts.find(c => c.id === String(newId)))
-    const newContact = {
-        id: String(newId),
-        name: contact.name,
-        number: contact.number
-    }
-    contacts.push(newContact)
-    response.status(201).json(newContact)
-})
+    const contact = new Contact({
+        name: body.name,
+        number: body.number,
+    })
+    contact.save().then(savedContact => {
+        response.status(201).json(savedContact.toJSON())
+    })
 
+})
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`)
+})
 const unknownEndpoint = (request, response) => {
     response.status(404).send({error: 'unknown endpoint'})
 }
 app.use(unknownEndpoint)
 app.use(express.static(path.join(__dirname, 'dist')));
+
 
