@@ -7,6 +7,7 @@ app.use(cors())
 app.use(express.json())
 
 
+
 const path = require('path');
 const mongoose = require('mongoose')
 const url = process.env.MONGO_URI
@@ -91,14 +92,16 @@ app.get('/api/notes', (request, response) => {
     })
 })
 
-app.get('/api/notes/:id', (request, response) => {
-    Note.findById(request.params.id).then(note => {
+app.get('/api/notes/:id', (request, response, next) => {
+    Note.findById(request.params.id)
+    .then(note => {
         if (note) {
             response.json(note.toJSON())
         } else {
             response.status(404).end()
         }
     })
+    .catch(error => next(error))
 })
 
 app.get('/api/contacts', (request, response) => { //get all
@@ -113,37 +116,45 @@ app.get('/api/info', (request, response) => { // count number and date
     response.send(`<p>Kontakteja on ${count} kappaletta</p><p>${date}</p>`)
 }) 
 
-app.get('/api/contacts/:id', (request, response) => {
+app.get('/api/contacts/:id', (request, response, next) => {
     Contact.findById(request.params.id).then(contact => {
         if (contact) {
             response.json(contact.toJSON())
         } else {
-            response.status(404).send({ error: 'Kontaktia ei ole' })
+            const error = new Error('Kontaktia ei ole')
+            error.name = 'NotFound'
+            next(error)
         }
     })
 })
 
-app.delete('/api/contacts/:id', (request, response) => {
+app.delete('/api/contacts/:id', (request, response, next) => {
     Contact.findByIdAndDelete(request.params.id)
-        .then(() => {
+        .then(result => {
             response.status(204).end()
         })
-        .catch(error => {
-            response.status(404).send({ error: 'Kontakti poistettu'})
-        })
+        .catch(error => next(error))
 })
-app.post('/api/notes', (request, response) => {
+
+app.delete('/api/notes/:id', (request, response, next) => {
+    Note.findByIdAndDelete(request.params.id)
+        .then(result => {
+            response.status(204).end()
+        })
+        .catch(error => next(error))
+})
+
+app.post('/api/notes', (request, response, next) => {
     const body = request.body
-    if (!body.content) {
-        return response.status(400).json({ error: 'content missing' })
-    }
     const note = new Note({
         content: body.content,
         important: body.important || false,
     })
-    note.save().then(savedNote => {
-        response.json(savedNote.toJSON())
-    })
+    note.save()
+        .then(savedNote => {
+            response.json(savedNote.toJSON())
+        })
+        .catch(error => next(error))
 })
 
 app.post('/api/contacts', (request, response) => {
@@ -161,14 +172,42 @@ app.post('/api/contacts', (request, response) => {
     })
 
 })
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
+
+app.put('/api/notes/:id', (request, response, next) => {
+    const { content, important } = request.body
+    Note.findById(request.params.id)
+        .then(note => {
+            if (!note) {
+                return response.status(404).end()
+            }
+            note.content = content
+            note.important = important
+
+            return note.save().then((updatedNote) => {
+                response.json(updatedNote)
+            })
+        })
+        .catch(error => next(error))
 })
+
 app.use(express.static(path.join(__dirname, 'dist')));
 
 const unknownEndpoint = (request, response) => {
     response.status(404).send({error: 'unknown endpoint'})
 }
 app.use(unknownEndpoint)
-
-
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+    if (error.name === 'CastError') {
+        return response.status(400).send({ error: 'malformatted id'})
+    } else if (error.name === 'ValidationError') {
+        return response.status(400).send({ error: error.message})
+    } else if (error.name === 'NotFound') {
+        return response.status(404).send({ error: error.message})
+    }
+    next(error)
+}
+app.use(errorHandler)
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`)
+})

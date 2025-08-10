@@ -9,8 +9,15 @@ mongoose.connect(url)
 
 
 const contactSchema = new mongoose.Schema({
-    name: String,
-    number: String,
+    name: {
+        type: String,
+        required: [true, 'Nimi puuttuu'],
+        minlength: [3, 'Nimen on oltava väh. 3 merkkiä pitkä']
+    },
+    number: {
+        type: String,
+        required: [true, 'Numero puuttuu']
+    }
 })
 
 contactSchema.set('toJSON', {
