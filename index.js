@@ -4,7 +4,7 @@ const morgan = require('morgan')
 const cors = require('cors')
 const app = express()
 app.use(cors())
-app.use('/api', express.json())
+app.use(express.json())
 
 
 const path = require('path');
@@ -181,9 +181,6 @@ app.post('/api/contacts', (request, response) => {
 
 })
 app.use(express.static(path.join(__dirname, 'dist')));
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'))
-})
 
 const unknownEndpoint = (request, response) => {
     response.status(404).send({error: 'unknown endpoint'})
