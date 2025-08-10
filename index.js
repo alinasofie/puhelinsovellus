@@ -5,9 +5,7 @@ const cors = require('cors')
 const app = express()
 app.use('/api', express.json())
 app.use(cors())
-/* app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
-}) */
+
 const startServer = () => {
     app.listen(PORT, () => {
         console.log(`Server running on port${PORT}`)
