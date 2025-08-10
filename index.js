@@ -1,30 +1,16 @@
-require('dotenv').config();
+require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
-const mongoose = require('mongoose')
 const cors = require('cors')
-
 const path = require('path');
-
+const Note = require('./models/note')
 const app = express()
-
-app.use(express.json())
-app.use(express.static(path.join(__dirname, 'dist')));
 app.use(cors())
+app.use('/api', express.json())
+
+
 
 const PORT = process.env.PORT || 3001
-
-mongoose.set('strictQuery', false);
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => {
-        console.log('Yhdistetty MongoDB-tietokantaan');
-        app.listen(PORT, () => {
-            console.log(`Serveri portissa ${PORT}`)
-        })
-        runApp();
-    })
-    .catch((err) => console.error('Virhe yhdistettäessä:', err));
-
 
 
 
@@ -94,26 +80,23 @@ let notes = [
       "important": false
     }
 ]
-const noteSchema = new mongoose.Schema({
-    content: String,
-    important: Boolean,
-})
-const Note = mongoose.model('Note', noteSchema)
-function runApp() {
-    const note = new Note({
-        content: 'HTML is lovely',
-        important: true,
-    });
-    note.save().then(() => {
-        console.log('Note on tallennettu tietokantaan');
-    })
-}
+
+
+
 app.get('/', (request, response) => { // random
   response.send('<h1>Hello World!</h1>')
 })
 
 app.get('/api/notes', (request, response) => {
-    response.json(notes)
+    Note.find({}).then(notes => {
+        response.json(notes)
+    })
+})
+
+app.get('/api/notes/:id', (request, response) => {
+    Note.findById(request.params.id).then(note => {
+        response.json(note)
+    })
 })
 
 app.get('/api/contacts', (request, response) => { //get all
@@ -145,6 +128,20 @@ app.delete('/api/contacts/:id', (request, response) => {
         response.status(404).send({ error: 'Kontaktia ei löytynyt'})
     }
 })
+app.post('/api/notes', (request, response) => {
+    const body = request.body
+    if (!body.content) {
+        return response.status(400).json({ error: 'content missing' })
+    }
+    const note = new Note({
+        content: body.content,
+        important: body.important || false,
+    })
+    note.save().then(savedNote => {
+        response.json(savedNote)
+    })
+})
+
 app.post('/api/contacts', (request, response) => {
     const contact = request.body
     if (!contact.name || !contact.number) {
@@ -171,5 +168,5 @@ const unknownEndpoint = (request, response) => {
     response.status(404).send({error: 'unknown endpoint'})
 }
 app.use(unknownEndpoint)
-
+app.use(express.static(path.join(__dirname, 'dist')));
 
