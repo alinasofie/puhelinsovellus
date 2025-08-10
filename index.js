@@ -15,22 +15,6 @@ const Contact = require('./models/contact')
 const PORT = process.env.PORT || 3001
 
 
-mongoose.set('strictQuery', false)
-
-mongoose.connect(url)
-  .then(() => {
-    console.log('Connected to MongoDB')
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`)
-    })
-  })
-  .catch((error) => {
-    console.error('Error connecting to MongoDB:', error.message)
-  })
-
-
-
-
 console.log('__dirname is:', __dirname);
 morgan.token('post-contact', (request) => {
     if (request.method === 'POST' && request.body && request.body.name && request.body.number) {
@@ -179,6 +163,9 @@ app.post('/api/contacts', (request, response) => {
         response.status(201).json(savedContact.toJSON())
     })
 
+})
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`)
 })
 app.use(express.static(path.join(__dirname, 'dist')));
 
