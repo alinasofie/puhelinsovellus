@@ -10,6 +10,7 @@ const mongoose = require('mongoose')
 const url = process.env.MONGO_URI
 const Note = require('./models/note')
 const Contact = require('./models/contact')
+const PORT = process.env.PORT || 3001
 
 
 mongoose.set('strictQuery', false)
@@ -26,7 +27,7 @@ mongoose.connect(url)
   })
 
 
-const PORT = process.env.PORT || 3001
+
 
 console.log('__dirname is:', __dirname);
 morgan.token('post-contact', (request) => {
@@ -183,5 +184,7 @@ const unknownEndpoint = (request, response) => {
 }
 app.use(unknownEndpoint)
 app.use(express.static(path.join(__dirname, 'dist')));
-
+app.get('*', (request, response) => {
+    response.sendFile(path.join(__dirname, 'dist', 'index.html'))
+})
 

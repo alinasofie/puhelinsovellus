@@ -1,7 +1,5 @@
 const mongoose = require('mongoose')
-mongoose.set('strictQuery', false)
-const url = process.env.MONGO_URI
-mongoose.connect(url)
+
 
 const contactSchema = new mongoose.Schema({
     name: String,
