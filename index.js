@@ -2,6 +2,19 @@ require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
+const mongoose = require('mongoose')
+mongoose.set('strictQuery', false)
+const url = process.env.MONGO_URI
+console.log('connecting to', url)
+mongoose.connect(url)
+    .then(result => {
+        console.log('connected to MONGO')
+    })
+    .catch((error) => {
+        console.log('error connecting to MONGO:', error.message)
+    })
+
+
 const path = require('path');
 const Note = require('./models/note')
 const Contact = require('./models/contact')
@@ -13,8 +26,6 @@ app.use(cors())
 
 
 const PORT = process.env.PORT || 3001
-
-
 
 console.log('__dirname is:', __dirname);
 morgan.token('post-contact', (request) => {
