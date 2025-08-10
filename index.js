@@ -3,8 +3,10 @@ const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
 const app = express()
-app.use('/api', express.json())
 app.use(cors())
+app.use('/api', express.json())
+app.use(express.static(path.join(__dirname, 'dist')));
+
 const path = require('path');
 const mongoose = require('mongoose')
 const url = process.env.MONGO_URI
@@ -183,6 +185,5 @@ const unknownEndpoint = (request, response) => {
     response.status(404).send({error: 'unknown endpoint'})
 }
 app.use(unknownEndpoint)
-app.use(express.static(path.join(__dirname, 'dist')));
 
 
