@@ -1,17 +1,15 @@
 const mongoose = require('mongoose')
 
 const password = process.argv[2]
-const name = process.argv[3]
-const number = process.argv[4]
 const uri = `mongodb+srv://alinalaaksonen:${password}@cluster0.lkwmyef.mongodb.net/noteApp?retryWrites=true&w=majority&appName=Cluster0`
 
-mongoose.set('strictQuery', false);
+mongoose.set('strictQuery', false)
 mongoose.connect(uri)
     .then(() => {
         console.log('Yhdistetty MongoDB-tietokantaan');
 
     })
-    .catch((err) => console.error('Virhe yhdistettäessä:', err));
+    .catch((err) => console.error('Virhe yhdistettäessä:', err))
 
 
 const contactSchema = new mongoose.Schema({

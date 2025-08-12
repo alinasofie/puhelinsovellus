@@ -8,15 +8,13 @@ app.use(express.json())
 
 
 
-const path = require('path');
-const mongoose = require('mongoose')
-const url = process.env.MONGO_URI
+const path = require('path')
 const Note = require('./models/note')
 const Contact = require('./models/contact')
 const PORT = process.env.PORT || 3001
 
 
-console.log('__dirname is:', __dirname);
+console.log('__dirname is:', __dirname)
 morgan.token('post-contact', (request) => {
     if (request.method === 'POST' && request.body && request.body.name && request.body.number) {
         return `name=${request.body.name}, number=${request.body.number}`
@@ -30,58 +28,58 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :p
 
 let contacts = [
     {
-        id: "1",
-        name: "Arto Hellas",
-        number: "040-123456"
+        id: '1',
+        name: 'Arto Hellas',
+        number: '040-123456'
     },
     {
-        id: "2",
-        name: "Ada Lovelace",
-        number: "39-44-5323523"
+        id: '2',
+        name: 'Ada Lovelace',
+        number: '39-44-5323523'
     },
     {
-        id: "3",
-        name: "Dan Abramov",
-        number: "12-43-234345"
+        id: '3',
+        name: 'Dan Abramov',
+        number: '12-43-234345'
     },
     {
-        id: "4",
-        name: "Mary Poppendick",
-        number: "39-23-6423122"
+        id: '4',
+        name: 'Mary Poppendick',
+        number: '39-23-6423122'
     }
 ]
-let notes = [
+/* let notes = [
     {
-      "id": "1",
-      "content": "HTML is easy",
+      "id": '1',
+      "content": 'HTML is easy',
       "important": true
     },
     {
-      "id": "2",
-      "content": "Browser can execute only Javascript",
+      "id": '2',
+      "content": 'Browser can execute only Javascript',
       "important": false
     },
     {
-      "id": "3",
-      "content": "GET and POST are the most important methods of HTTP protocol",
+      "id": '3',
+      "content": 'GET and POST are the most important methods of HTTP protocol',
       "important": true
     },
     {
-      "id": "c592",
-      "content": "HTML is the most boring language",
+      "id": 'c592',
+      "content": 'HTML is the most boring language',
       "important": true
     },
     {
-      "id": "8dde",
-      "content": "Hello",
+      "id": '8dde',
+      "content": 'Hello',
       "important": true
     },
     {
-      "id": "ae58",
-      "content": "Hello again",
+      "id": 'ae58',
+      "content": 'Hello again',
       "important": false
     }
-]
+] */
 
 
 
@@ -114,7 +112,7 @@ app.get('/api/info', (request, response) => { // count number and date
     const count = contacts.length
     const date = new Date()
     response.send(`<p>Kontakteja on ${count} kappaletta</p><p>${date}</p>`)
-}) 
+})
 
 app.get('/api/contacts/:id', (request, response, next) => {
     Contact.findById(request.params.id).then(contact => {
@@ -138,7 +136,7 @@ app.delete('/api/contacts/:id', (request, response, next) => {
 
 app.delete('/api/notes/:id', (request, response, next) => {
     Note.findByIdAndDelete(request.params.id)
-        .then(result => {
+        .then(() => {
             response.status(204).end()
         })
         .catch(error => next(error))
@@ -160,7 +158,7 @@ app.post('/api/notes', (request, response, next) => {
 app.post('/api/contacts', (request, response) => {
     const body = request.body
     if (!body.name || !body.number) {
-        return response.status(400).json({ error: 'Nimi tai numero puuttuu'})
+        return response.status(400).json({ error: 'Nimi tai numero puuttuu' })
 
     }
     const contact = new Contact({
@@ -190,20 +188,20 @@ app.put('/api/notes/:id', (request, response, next) => {
         .catch(error => next(error))
 })
 
-app.use(express.static(path.join(__dirname, 'dist')));
+app.use(express.static(path.join(__dirname, 'dist')))
 
 const unknownEndpoint = (request, response) => {
-    response.status(404).send({error: 'unknown endpoint'})
+    response.status(404).send({ error: 'unknown endpoint' })
 }
 app.use(unknownEndpoint)
 const errorHandler = (error, request, response, next) => {
     console.error(error.message)
     if (error.name === 'CastError') {
-        return response.status(400).send({ error: 'malformatted id'})
+        return response.status(400).send({ error: 'malformatted id' })
     } else if (error.name === 'ValidationError') {
-        return response.status(400).send({ error: error.message})
+        return response.status(400).send({ error: error.message })
     } else if (error.name === 'NotFound') {
-        return response.status(404).send({ error: error.message})
+        return response.status(404).send({ error: error.message })
     }
     next(error)
 }
